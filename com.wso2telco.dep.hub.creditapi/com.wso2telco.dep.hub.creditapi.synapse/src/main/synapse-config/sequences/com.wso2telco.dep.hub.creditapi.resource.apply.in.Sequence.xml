@@ -74,24 +74,29 @@
 	    <with-param name="clientCorrelator" value="{$ctx:clientCorrelator}"/>
 	</call-template>
 
-            
-	<script language="js">
-		<![CDATA[
-			var payload = mc.getPayloadJSON();
-			var uniqueClientCorrelator = mc.getProperty("uniqueClientCorrelator");
-			var generatedNotifyURL = mc.getProperty("generatedNotifyURL");
+    <filter regex="true" source="boolean(fn:normalize-space($ctx:uniqueClientCorrelator))">
+        <then>
+            <call-template target="com.wso2telco.dep.common.jsonEnrich.Template">
+                <with-param name="sourceProperty" value="uniqueClientCorrelator"/>
+                <with-param name="sourceType" value="property"/>
+                <with-param name="targetJsonPath" value="$.creditApplyRequest.clientCorrelator"/>
+                <with-param name="targetAction" value="set"/>
+            </call-template>
+        </then>
+        <else/>
+    </filter>
 
-			if (uniqueClientCorrelator != null) {
-				payload.creditApplyRequest.clientCorrelator = uniqueClientCorrelator;
-			}
-
-			if (generatedNotifyURL != null) {
-				payload.creditApplyRequest.receiptRequest.notifyURL = generatedNotifyURL;
-			}
-
-			mc.setPayloadJSON(payload);
-		]]>
-	</script>
+    <filter regex="true" source="boolean(fn:normalize-space($ctx:generatedNotifyURL))">
+        <then>
+            <call-template target="com.wso2telco.dep.common.jsonEnrich.Template">
+                <with-param name="sourceProperty" value="generatedNotifyURL"/>
+                <with-param name="sourceType" value="property"/>
+                <with-param name="targetJsonPath" value="$.creditApplyRequest.receiptRequest.notifyURL"/>
+                <with-param name="targetAction" value="set"/>
+            </call-template>
+        </then>
+        <else/>
+    </filter>
 	
 	<sequence key="com.wso2telco.dep.common.call.endpoint.Sequence"/>
 	
@@ -99,43 +104,61 @@
   	<property expression="get-property('registry', 'conf:/repository/wso2telco/configurations/mediationConfig.xml')" name="mediationConfig" scope="default" type="OM"/>
   	<property expression="$ctx:mediationConfig//huburl" name="hubUrl" scope="default" type="STRING"/>
 	
-	<script language="js">
-		<![CDATA[
-			var payload = mc.getPayloadJSON();
-			var uniqueClientCorrelator = mc.getProperty("uniqueClientCorrelator");
-			var generatedNotifyURL = mc.getProperty("generatedNotifyURL");
-			var clientCorrelator = mc.getProperty("clientCorrelator");
-			         								
-			if (clientCorrelator != null && clientCorrelator !="") {			    
-				payload.creditApplyResponse.clientCorrelator = clientCorrelator;
-			} else {
-				delete payload.creditApplyResponse.clientCorrelator;
-			}
+    <!-- setting client correlator -->
+    <filter regex="true" source="boolean(fn:normalize-space($ctx:clientCorrelator))">
+        <then>
+            <call-template target="com.wso2telco.dep.common.jsonEnrich.Template">
+                <with-param name="sourceProperty" value="clientCorrelator"/>
+                <with-param name="sourceType" value="property"/>
+                <with-param name="targetJsonPath" value="$.creditApplyResponse.clientCorrelator"/>
+                <with-param name="targetAction" value="set"/>
+            </call-template>
+        </then>
+        <else>
+            <call-template target="com.wso2telco.dep.common.jsonDetach.Template">
+                <with-param name="jsonPath" value="$.creditApplyResponse.clientCorrelator"/>
+            </call-template>
+        </else>
+    </filter>
 
-			if (generatedNotifyURL != null) {
-				payload.creditApplyResponse.receiptResponse.notifyURL = mc.getProperty("notifyURL");
-			}
-			
-			var resourceURL = payload.creditApplyResponse.receiptResponse.resourceURL;
-			
-			if (resourceURL != null && resourceURL !="") {
-				var operatorEndpoint = mc.getProperty("OPERATOR_ENDPOINT");
-				var hubURL = mc.getProperty("hubUrl");
-				var apiName = mc.getProperty("API_NAME");
-				var apiVersion = mc.getProperty("VERSION");
-				
-				var hubResourceURL = resourceURL.replace(operatorEndpoint, hubURL.concat("/")
-					.concat(apiName).concat("/").concat(apiVersion));
-			
-				payload.creditApplyResponse.receiptResponse.resourceURL = hubResourceURL;				
-			} else {
-				delete payload.creditApplyResponse.receiptResponse.resourceURL;
-			}
+    <!-- setting generated notify URL -->
+    <filter regex="true" source="boolean(fn:normalize-space($ctx:generatedNotifyURL))">
+        <then>
+            <call-template target="com.wso2telco.dep.common.jsonEnrich.Template">
+                <with-param name="sourceProperty" value="notifyURL"/>
+                <with-param name="sourceType" value="property"/>
+                <with-param name="targetJsonPath" value="$.creditApplyResponse.receiptResponse.notifyURL"/>
+                <with-param name="targetAction" value="set"/>
+            </call-template>
+        </then>
+        <else/>
+    </filter>
 
-			mc.setPayloadJSON(payload);
-		]]>
-	</script>
-	
+    <!-- setting resource URL -->
+    <filter regex="true" source="boolean(fn:normalize-space($.creditApplyResponse.receiptResponse.resourceURL))">
+        <then>
+            <property name="replacingValue" expression="fn:concat($ctx:hubUrl, '/', $ctx:API_NAME, '/', $ctx:VERSION)"/>
+            <property name="responseResourceURL" expression="json-eval($.creditApplyResponse.receiptResponse.resourceURL)"/>
+            <call-template target="com.wso2telco.dep.common.stringReplace.Template">
+                <with-param name="searchValue" value="{$ctx:OPERATOR_ENDPOINT}"/>
+                <with-param name="newValue" value="{$ctx:replacingValue}"/>
+                <with-param name="inputValue" value="{$ctx:responseResourceURL}"/>
+                <with-param name="outputProperty" value="hubResourceURL"/>
+            </call-template>
+            <call-template target="com.wso2telco.dep.common.jsonEnrich.Template">
+                <with-param name="sourceProperty" value="hubResourceURL"/>
+                <with-param name="sourceType" value="property"/>
+                <with-param name="targetJsonPath" value="$.creditApplyResponse.receiptResponse.resourceURL"/>
+                <with-param name="targetAction" value="set"/>
+            </call-template>
+        </then>
+        <else>
+            <call-template target="com.wso2telco.dep.common.jsonDetach.Template">
+                <with-param name="jsonPath" value="$.creditApplyResponse.receiptResponse.resourceURL"/>
+            </call-template>
+        </else>
+    </filter>
+
 	<sequence key="com.wso2telco.dep.common.main.response.Sequence"/>
   
 </sequence>
