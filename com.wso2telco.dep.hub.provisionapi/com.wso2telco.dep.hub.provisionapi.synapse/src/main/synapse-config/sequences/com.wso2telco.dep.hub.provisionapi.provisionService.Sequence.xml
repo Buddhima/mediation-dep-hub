@@ -138,6 +138,7 @@
     </filter>
     <property expression="get-property('registry', 'conf:/repository/wso2telco/configurations/mediationConfig.xml')" name="mediationConfig" scope="default" type="OM"/>
     <property expression="$ctx:mediationConfig//huburl" name="HUB_URL" scope="default" type="STRING"/>
+<<<<<<< HEAD
 	<call-template target="com.wso2telco.dep.common.notification.url.readModify.Template">
    		<with-param name="notifyURL" value="{$ctx:notifyURL}"/>	
    		<with-param name="apiResourceSuffix" value="/provisioningnotification"/>   
@@ -161,5 +162,42 @@
 	var hubResourceURL = hubURL.concat("/").concat(apiName).concat("/").concat(apiVersion).concat(resourcePath);
 	payload.serviceProvisionResponse.callbackReference.resourceURL = hubResourceURL;
 	mc.setPayloadJSON(payload);]]></script>
+=======
+    <property expression="get-property('registry', 'conf:/repository/wso2telco/configurations/notificationURL.xml')" name="notificationURLConfig" scope="default" type="OM"/>
+    <property expression="$ctx:notificationURLConfig//provisioning/provisioningNotification" name="NOTIFICATION_URL" scope="default" type="STRING"/>
+    <sequence key="com.wso2telco.dep.common.notification.url.modify.Sequence"/>
+    <filter regex="true" source="get-property('INTERNAL_ERROR')">
+    	<then>
+        	<sequence key="com.wso2telco.dep.common.response.exceptions.Sequence"/>
+        </then>
+        <else/>
+    </filter>
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
+			var payload = mc.getPayloadJSON();
+		    payload.serviceProvisionRequest.serviceCode = mc.getProperty('serviceCode');
+		    payload.serviceProvisionRequest.serviceName = null;
+		    payload.serviceProvisionRequest.clientCorrelator = mc.getProperty('uniqueClientCorrelator');
+		    payload.serviceProvisionRequest.callbackReference.notifyURL = mc.getProperty('generatedNotifyURL');
+		    mc.setPayloadJSON(payload);
+		"/>
+	</class>
+    <sequence key="com.wso2telco.dep.common.call.endpoint.Sequence"/>
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
+			var operatorEndpoint = mc.getProperty('OPERATOR_ENDPOINT');
+			var hubURL = mc.getProperty('HUB_URL');
+			var apiName = mc.getProperty('API_NAME');
+			var apiVersion = mc.getProperty('VERSION');
+			var payload = mc.getPayloadJSON();
+			payload.serviceProvisionResponse.clientCorrelator = mc.getProperty('clientCorrelator');
+			var gatewayResourceURL = payload.serviceProvisionResponse.callbackReference.resourceURL;
+			var resourcePath = gatewayResourceURL.replace(operatorEndpoint, '');
+			var hubResourceURL = hubURL.concat('/').concat(apiName).concat('/').concat(apiVersion).concat(resourcePath);
+			payload.serviceProvisionResponse.callbackReference.resourceURL = hubResourceURL;
+			mc.setPayloadJSON(payload);
+		"/>
+	</class>
+>>>>>>> c789723f2ef81681b94cea18d17ad0c4fb64cff2
     <sequence key="com.wso2telco.dep.common.main.response.Sequence"/>
 </sequence>

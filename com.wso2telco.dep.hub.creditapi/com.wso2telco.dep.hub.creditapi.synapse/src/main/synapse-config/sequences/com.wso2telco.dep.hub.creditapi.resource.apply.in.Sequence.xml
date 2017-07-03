@@ -62,11 +62,11 @@
 	</call-template>
 
             
-	<script language="js">
-		<![CDATA[
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
 			var payload = mc.getPayloadJSON();
-			var uniqueClientCorrelator = mc.getProperty("uniqueClientCorrelator");
-			var generatedNotifyURL = mc.getProperty("generatedNotifyURL");
+			var uniqueClientCorrelator = mc.getProperty('uniqueClientCorrelator');
+			var generatedNotifyURL = mc.getProperty('generatedNotifyURL');
 
 			if (uniqueClientCorrelator != null) {
 				payload.creditApplyRequest.clientCorrelator = uniqueClientCorrelator;
@@ -77,32 +77,39 @@
 			}
 
 			mc.setPayloadJSON(payload);
-		]]>
-	</script>
+		"/>
+	</class>
 	
 	<sequence key="com.wso2telco.dep.common.call.endpoint.Sequence"/>
 	<sequence key="com.wso2telco.dep.common.handle.gateway.error.Sequence"/>
 
   	<property expression="$ctx:mediationConfig//huburl" name="hubUrl" scope="default" type="STRING"/>
+<<<<<<< HEAD
   		
 	<script language="js">
 		<![CDATA[
+=======
+	
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
+>>>>>>> c789723f2ef81681b94cea18d17ad0c4fb64cff2
 			var payload = mc.getPayloadJSON();
-			var uniqueClientCorrelator = mc.getProperty("uniqueClientCorrelator");
-			var generatedNotifyURL = mc.getProperty("generatedNotifyURL");
-			var clientCorrelator = mc.getProperty("clientCorrelator");
+			var uniqueClientCorrelator = mc.getProperty('uniqueClientCorrelator');
+			var generatedNotifyURL = mc.getProperty('generatedNotifyURL');
+			var clientCorrelator = mc.getProperty('clientCorrelator');
 			         								
-			if (clientCorrelator != null && clientCorrelator !="") {			    
+			if (clientCorrelator != null &amp;&amp; clientCorrelator !='') {
 				payload.creditApplyResponse.clientCorrelator = clientCorrelator;
 			} else {
 				delete payload.creditApplyResponse.clientCorrelator;
 			}
 
 			if (generatedNotifyURL != null) {
-				payload.creditApplyResponse.receiptResponse.notifyURL = mc.getProperty("notifyURL");
+				payload.creditApplyResponse.receiptResponse.notifyURL = mc.getProperty('notifyURL');
 			}
 			
 			
+<<<<<<< HEAD
 			if (payload.creditApplyResponse.receiptResponse != null) {
 				var resourceURL = payload.creditApplyResponse.receiptResponse.resourceURL;
 			}
@@ -112,9 +119,16 @@
 				var hubURL = mc.getProperty("hubUrl");
 				var apiName = mc.getProperty("API_NAME");
 				var apiVersion = mc.getProperty("VERSION");
+=======
+			if (resourceURL != null &amp;&amp; resourceURL !='') {
+				var operatorEndpoint = mc.getProperty('OPERATOR_ENDPOINT');
+				var hubURL = mc.getProperty('hubUrl');
+				var apiName = mc.getProperty('API_NAME');
+				var apiVersion = mc.getProperty('VERSION');
+>>>>>>> c789723f2ef81681b94cea18d17ad0c4fb64cff2
 				
-				var hubResourceURL = resourceURL.replace(operatorEndpoint, hubURL.concat("/")
-					.concat(apiName).concat("/").concat(apiVersion));
+				var hubResourceURL = resourceURL.replace(operatorEndpoint, hubURL.concat('/')
+					.concat(apiName).concat('/').concat(apiVersion));
 			
 				payload.creditApplyResponse.receiptResponse.resourceURL = hubResourceURL;				
 			} else {
@@ -122,8 +136,8 @@
 			}
 			
 			mc.setPayloadJSON(payload);
-		]]>
-	</script>
+		"/>
+	</class>
 	
 	<sequence key="com.wso2telco.dep.common.main.response.Sequence"/>
   

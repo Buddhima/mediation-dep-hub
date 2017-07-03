@@ -93,12 +93,21 @@
     <else>
       <filter xpath="boolean($ctx:imsi)">
         <then>
-          <script language="js"><![CDATA[var imsi = mc.getProperty("imsi");
+			<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+				<property name="script" value="
+					var imsi = mc.getProperty('imsi');
 					var mcc = imsi.substring(0, 3);
 					var rem = imsi.substring(3);
 					var mnc = rem.substring(0, 2);
+<<<<<<< HEAD
 					mc.getProperty("mcc", mcc);
 					mc.getProperty("mnc", mnc);]]></script>
+=======
+					mc.setProperty('mcc', mcc);
+					mc.setProperty('mnc', mnc);
+				"/>
+			</class>
+>>>>>>> c789723f2ef81681b94cea18d17ad0c4fb64cff2
         </then>
         <else>
           <property
@@ -179,22 +188,29 @@
   <sequence key="com.wso2telco.dep.common.call.endpoint.Sequence"/>
   <sequence key="com.wso2telco.dep.common.handle.gateway.error.Sequence"/>
   <!-- extract response resource url -->
-  <script language="js"><![CDATA[var operatorEndpoint = mc.getProperty("OPERATOR_ENDPOINT");
-  	var payload = mc.getPayloadJSON();
-  	var gatewayResourceURL = payload.customer.resourceURL;
-  	var gatewayResourcePath = gatewayResourceURL.replace(operatorEndpoint, "");
-  	mc.setProperty("GATEWAY_RESOURCE_PATH", gatewayResourcePath);]]>
-  </script>
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
+			var operatorEndpoint = mc.getProperty('OPERATOR_ENDPOINT');
+		  	var payload = mc.getPayloadJSON();
+		  	var gatewayResourceURL = payload.customer.resourceURL;
+		  	var gatewayResourcePath = gatewayResourceURL.replace(operatorEndpoint, '');
+		  	mc.setProperty('GATEWAY_RESOURCE_PATH', gatewayResourcePath);
+		"/>
+	</class>
   <!-- replace requestIdentifier in GATEWAY_RESOURCE_PATH from service provider's requestIdentifier -->
   <sequence key="com.wso2telco.dep.common.replace.hub.request.identifier.Sequence"/>
   <!-- generating response json -->
-  <script language="js"><![CDATA[var hubURL = mc.getProperty("HUB_URL");
-	var apiName = mc.getProperty("API_NAME");
-	var apiVersion = mc.getProperty("VERSION");
-	var payload = mc.getPayloadJSON();
-	payload.customer.requestIdentifier = mc.getProperty("requestIdentifier");
-	var hubResourceURL = hubURL.concat("/").concat(apiName).concat("/").concat(apiVersion).concat(mc.getProperty("GATEWAY_RESOURCE_PATH"));
-	payload.customer.resourceURL = hubResourceURL;
-	mc.setPayloadJSON(payload);]]></script>
+	<class name="org.wso2telco.dep.nashornmediator.NashornMediator">
+		<property name="script" value="
+			var hubURL = mc.getProperty('HUB_URL');
+			var apiName = mc.getProperty('API_NAME');
+			var apiVersion = mc.getProperty('VERSION');
+			var payload = mc.getPayloadJSON();
+			payload.customer.requestIdentifier = mc.getProperty('requestIdentifier');
+			var hubResourceURL = hubURL.concat('/').concat(apiName).concat('/').concat(apiVersion).concat(mc.getProperty('GATEWAY_RESOURCE_PATH'));
+			payload.customer.resourceURL = hubResourceURL;
+			mc.setPayloadJSON(payload);
+		"/>
+	</class>
   <sequence key="com.wso2telco.dep.common.main.response.Sequence"/>
 </sequence>
