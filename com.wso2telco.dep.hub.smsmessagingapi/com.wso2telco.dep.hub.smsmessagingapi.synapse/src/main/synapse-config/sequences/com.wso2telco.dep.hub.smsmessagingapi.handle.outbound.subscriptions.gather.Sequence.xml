@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sequence
-	name="com.wso2telco.dep.hub.smsmessagingapi.handle.outbound.subscriptions.gather.Sequence"
-	trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+<sequence name="com.wso2telco.dep.hub.smsmessagingapi.handle.outbound.subscriptions.gather.Sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
 	<filter regex="Not Provisioned|Failed" source="$ctx:messageStatus">
 		<then />
 		<else>
 			<filter xpath="$body//deliveryReceiptSubscription">
 				<then>
-					<property name="messageStatus" scope="default" type="STRING"
-						value="Created" />
-					<property expression="json-eval($.deliveryReceiptSubscription.resourceURL)"
-						name="resourceURL" scope="default" type="STRING" />
+					<property name="messageStatus" scope="default" type="STRING" value="Created" />
+					<property expression="json-eval($.deliveryReceiptSubscription.resourceURL)" name="resourceURL" scope="default" type="STRING" />
 					<dbreport>
 						<connection>
 							<pool>
@@ -26,8 +22,7 @@
 					</dbreport>
 				</then>
 				<else>
-					<property name="messageStatus" scope="default" type="STRING"
-						value="Not Created" />
+					<property name="messageStatus" scope="default" type="STRING" value="Not Created" />
 				</else>
 			</filter>
 		</else>
@@ -53,24 +48,18 @@
 		<completeCondition timeout="60">
 			<messageCount max="-1" min="-1" />
 		</completeCondition>
-		<onComplete enclosingElementProperty="collection"
-			expression="//senderAddresses">
-			<property
-				expression="get-property('registry', 'conf:/repository/wso2telco/configurations/mediationConfig.xml')"
-				name="mediationConfig" scope="default" type="OM" />
-			<property expression="$ctx:mediationConfig//huburl" name="HUB_URL"
-				scope="default" type="STRING" />
-			<property
-				expression="fn:concat($ctx:HUB_URL, $ctx:REST_FULL_REQUEST_PATH, '/', $ctx:notifyURLTableId)"
-				name="responseResourceURL" scope="default" type="STRING" />
+		<onComplete enclosingElementProperty="collection" expression="//senderAddresses">
+			<property expression="get-property('registry', 'conf:/repository/wso2telco/configurations/mediationConfig.xml')" name="mediationConfig" scope="default" type="OM" />
+			<property expression="$ctx:mediationConfig//huburl" name="HUB_URL" scope="default" type="STRING" />
+			<property expression="fn:concat($ctx:HUB_URL, $ctx:REST_FULL_REQUEST_PATH, '/', $ctx:notifyURLTableId)" name="responseResourceURL" scope="default" type="STRING" />
 			<payloadFactory media-type="xml">
 				<format>
 					<deliveryReceiptSubscription>
 						<callbackReference>
 							<callbackData>$1</callbackData>
 							<notifyURL>$2</notifyURL>
-						</callbackReference><?xml-multiple senderAddresses?>
-						$3
+						</callbackReference>
+						<?xml-multiple senderAddresses?>$3
 						<clientCorrelator>$4</clientCorrelator>
 						<resourceURL>$5</resourceURL>
 					</deliveryReceiptSubscription>

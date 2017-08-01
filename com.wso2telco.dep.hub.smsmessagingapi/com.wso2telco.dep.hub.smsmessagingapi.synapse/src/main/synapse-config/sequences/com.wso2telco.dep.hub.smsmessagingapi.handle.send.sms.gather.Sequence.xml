@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.gather.Sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+  <enrich>
+    <source clone="true" property="original_payload" type="property"/>
+    <target type="body"/>
+  </enrich>
+  <property name="collection" scope="default">
+    <outboundSMSMessageRequest xmlns=""/>
+  </property>
+  <aggregate id="smsmessagingapi.send.sms.splitter">
+<log level="custom">
+	<property name="LOG LEVEL X01" value="##################LOG LEVEL X01##################" ></property>
+</log>
+    <completeCondition>
+      <messageCount max="-1" min="-1"/>
+    </completeCondition>
+    <onComplete enclosingElementProperty="collection" expression="//address">
+      <property expression="json-eval($.address)" name="response_address" scope="default" type="STRING"/>
+      <property expression="fn:normalize-space($ctx:response_address)" group="1" name="response_address" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/>
+    </onComplete>
+  </aggregate>
+</sequence>

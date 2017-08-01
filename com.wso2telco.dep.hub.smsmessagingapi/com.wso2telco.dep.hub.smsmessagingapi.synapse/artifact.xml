@@ -41,4 +41,19 @@
     <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.outbound.notification.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
         <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.outbound.notification.Sequence.xml</file>
     </artifact>
+    <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.gather.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.gather.Sequence.xml</file>
+    </artifact>
+    <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.Sequence.xml</file>
+    </artifact>
+    <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.Sequence.xml</file>
+    </artifact>
+    <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.address.array.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.address.array.Sequence.xml</file>
+    </artifact>
+    <artifact name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.fault.Sequence" groupId="com.wso2telco.dep.hub.sequence" version="3.0.0-SNAPSHOT" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.fault.Sequence.xml</file>
+    </artifact>
 </artifacts>
