@@ -4,19 +4,61 @@
     <source clone="true" property="original_payload" type="property"/>
     <target type="body"/>
   </enrich>
+
   <property name="collection" scope="default">
     <outboundSMSMessageRequest xmlns=""/>
   </property>
+
   <aggregate id="smsmessagingapi.send.sms.splitter">
-<log level="custom">
-	<property name="LOG LEVEL X01" value="##################LOG LEVEL X01##################" ></property>
-</log>
+
     <completeCondition>
       <messageCount max="-1" min="-1"/>
     </completeCondition>
-    <onComplete enclosingElementProperty="collection" expression="//address">
-      <property expression="json-eval($.address)" name="response_address" scope="default" type="STRING"/>
-      <property expression="fn:normalize-space($ctx:response_address)" group="1" name="response_address" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/>
+
+    <onComplete enclosingElementProperty="collection" expression="//senderAddresses">
+
+      <!--property expression="json-eval($.address)" name="response_address" scope="default" type="STRING"/>
+      <property expression="fn:normalize-space($ctx:response_address)" group="1" name="response_address" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/-->
+
+			<payloadFactory media-type="xml">
+				<format>
+					<outboundSMSMessageRequest>
+						<address>$1</address>
+						<deliveryInfoList>
+							<deliveryInfo>$2</deliveryInfo>
+							<resourceURL>$3</resourceURL>
+						</deliveryInfoList>
+						<?xml-multiple senderAddresses?>$4
+						<outboundSMSTextMessage>
+							<message>$5</message>
+						</outboundSMSTextMessage>
+						<clientCorrelator>$6</clientCorrelator>
+						<receiptRequest>
+							<notifyURL>$7</notifyURL>
+							<callbackData>$8</callbackData>
+						</receiptRequest>
+						<senderName>$9</senderName>
+						<resourceURL>$10</resourceURL>
+					</outboundSMSMessageRequest>
+				</format>
+
+				<args>
+					<arg evaluator="xml" expression="$ctx:address" />
+					<arg evaluator="xml" value="==NEEDTOADD==" />
+					<arg evaluator="xml" expression="$ctx:notifyURL" />
+					<arg evaluator="xml" expression="//senderAddresses" />
+					<arg evaluator="xml" expression="$ctx:message" />
+					<arg evaluator="xml" expression="$ctx:clientCorrelator" />
+					<arg evaluator="xml" expression="$ctx:notifyURL" />
+					<arg evaluator="xml" expression="$ctx:callbackData" />
+					<arg evaluator="xml" expression="$ctx:senderAddress" />
+					<arg evaluator="xml" expression="$ctx:notifyURL" />
+				</args>
+
+			</payloadFactory>
+			<!-- TODO construct response resource url in payload factory -->
+			<sequence key="com.wso2telco.dep.common.main.response.Sequence" />
     </onComplete>
+
   </aggregate>
 </sequence>

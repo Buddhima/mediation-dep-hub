@@ -8,6 +8,8 @@
       <sequence>
         <property expression="//address/text()" name="address" scope="default" type="STRING"/>
         <property expression="fn:normalize-space($ctx:address)" group="1" name="address" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/>
+
+
         <!-- retrieve operator's endpoint -->
         <sequence key="com.wso2telco.dep.common.endpoint.retriever.Sequence"/>
         <filter regex="true" source="get-property('default', 'ENDPOINT_NOT_PROVISIONED')">
@@ -40,9 +42,19 @@
             </enrich>
             <!-- remove source tag -->
             <script language="js">
-            	<![CDATA[	var payload = mc.getPayloadXML();
+            	<![CDATA[
+		                	var log = mc.getServiceLog();
+            				var payload = mc.getPayloadXML();
 		                	delete payload..*::senderAddresses;
-		                	mc.setPayloadXML(payload);
+
+		                	var addressStr = mc.getProperty('address');
+		                	log.info('_____ADDRESS001___'+addressStr);
+		                	//var addressArr = [];
+							//addressArr.push(addressStr);
+							var address_tag = new XML(<address>{addressStr}</address>);
+							payload.outboundSMSMessageRequest.address = address_tag;
+							log.info('_____PL002___'+payload);
+							mc.setPayloadXML(payload);
 		      	]]>
 		   	</script>
             <!-- retrieve operator's access token -->

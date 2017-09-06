@@ -18,9 +18,12 @@
                     <target property="original_payload" type="property"/>
                 </enrich>
                 <!-- remove source tag -->
-                <script language="js"><![CDATA[var payload = mc.getPayloadXML();
-                delete payload..*::destinationAddresses;
-                mc.setPayloadXML(payload);]]></script>
+                <script language="js">
+                	<![CDATA[
+                		var payload = mc.getPayloadXML();
+                		delete payload..*::destinationAddresses;
+                		mc.setPayloadXML(payload);]]>
+                </script>
                 <!-- retrieve operator's endpoint -->
                 <sequence key="com.wso2telco.dep.common.operator.endpoint.retriever.Sequence"/>
                 <filter regex="true" source="get-property('default', 'ENDPOINT_NOT_PROVISIONED')">
