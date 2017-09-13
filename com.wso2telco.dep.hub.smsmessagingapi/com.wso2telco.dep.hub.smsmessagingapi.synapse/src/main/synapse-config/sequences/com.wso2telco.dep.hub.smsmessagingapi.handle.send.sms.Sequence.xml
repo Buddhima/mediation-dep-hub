@@ -99,7 +99,8 @@
 		<with-param name="clientCorrelator" value="{$ctx:clientCorrelator}" />
 	</call-template>
 	<!-- save service provider's notify url and generate new notify url from hub -->
-	<filter xpath="boolean($ctx:notifyURL)">
+	<!-- disabled temporary -->
+	<!--<filter xpath="boolean($ctx:notifyURL)">
 		<then>
 			<call-template target="com.wso2telco.dep.common.notification.url.readModify.Template">
 				<with-param name="notifyURL" value="{$ctx:notifyURL}" />
@@ -107,15 +108,17 @@
 			</call-template>
 		</then>
 		<else />
-	</filter>
+	</filter>-->
 	<!-- update clientCorrelator and notifyURL with generated values -->
 	<script language="js">
 		<![CDATA[	var payload = mc.getPayloadJSON();
-					payload.outboundSMSMessageRequest.clientCorrelator = mc.getProperty("uniqueClientCorrelator");
-					payload.outboundSMSMessageRequest.receiptRequest.notifyURL = mc.getProperty("generatedNotifyURL");
-					mc.setPayloadJSON(payload);
+					payload.outboundSMSMessageRequest.clientCorrelator = String(mc.getProperty("uniqueClientCorrelator"));
+					payload.outboundSMSMessageRequest.receiptRequest.notifyURL = String(mc.getProperty("generatedNotifyURL"));
+					var stringifiedPayload = JSON.stringify(payload);
+					mc.setPayloadJSON(stringifiedPayload);
 		]]>
 	</script>
+
 	<sequence key="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.Sequence" />
 	<sequence key="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.gather.Sequence" />
 </sequence>

@@ -1,66 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sequence name="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.Sequence" onError="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.splitter.fault.Sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
-  <!--CHANGE POSITION-->
-  <property expression="get-property('address')" name="MSISDN" scope="default" type="STRING"/>
-  <!--CHANGE POSITION-->
   <iterate attachPath="//outboundSMSMessageRequest" expression="//senderAddresses" id="smsmessagingapi.send.sms.splitter" preservePayload="true" sequential="true">
     <target>
       <sequence>
-        <property expression="//address/text()" name="address" scope="default" type="STRING"/>
-        <property expression="fn:normalize-space($ctx:address)" group="1" name="address" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/>
+        <property expression="//outboundSMSMessageRequest/senderAddresses/operatorCode/text()" name="OPERATOR_CODE" scope="default" type="STRING"/>
+        <property expression="fn:normalize-space($ctx:OPERATOR_CODE)" group="1" name="OPERATOR_CODE" pattern="((^(?!null).*$)|(^(null).+$))" scope="default" type="STRING"/>
+        <property name="MSISDN_LIST_XPATH" value="//outboundSMSMessageRequest/address"/>
+        <!-- calling msisdn filtering sequence -->
+        <sequence key="com.wso2telco.dep.common.msisdn.list.filter.Sequence"/>
 
+        <!-- Handle with single address case -->
+        <script language="js">
+          <![CDATA[
+                var log = mc.getServiceLog();
+                var payload = mc.getPayloadXML();
+                var addresses = payload..*::address;
+
+                if (addresses.length() == 1) {
+                  var originalJSONPayload = mc.getPayloadJSON();
+                  var newJSONPayload = {};
+                  newJSONPayload.outboundSMSMessageRequest = {};
+
+                  newJSONPayload.outboundSMSMessageRequest.address = [String(addresses)];
+
+                  newJSONPayload.outboundSMSMessageRequest.outboundSMSTextMessage = {};
+                  newJSONPayload.outboundSMSMessageRequest.outboundSMSTextMessage.message = String(originalJSONPayload.outboundSMSMessageRequest.outboundSMSTextMessage.message.toString());
+                  newJSONPayload.outboundSMSMessageRequest.clientCorrelator = originalJSONPayload.outboundSMSMessageRequest.clientCorrelator;
+                  newJSONPayload.outboundSMSMessageRequest.receiptRequest = originalJSONPayload.outboundSMSMessageRequest.receiptRequest;
+
+                  newJSONPayload.outboundSMSMessageRequest.senderAddress = payload..*::senderAddress.toString();
+                  newJSONPayload.outboundSMSMessageRequest.senderName = payload..*::senderName.toString();
+
+                  var stringifiedNewJSONPayload = JSON.stringify(newJSONPayload);
+                  mc.setPayloadJSON(stringifiedNewJSONPayload);
+                }
+          ]]>
+        </script>
 
         <!-- retrieve operator's endpoint -->
-        <sequence key="com.wso2telco.dep.common.endpoint.retriever.Sequence"/>
+        <sequence key="com.wso2telco.dep.common.operator.endpoint.retriever.Sequence"/>
         <filter regex="true" source="get-property('default', 'ENDPOINT_NOT_PROVISIONED')">
-          <then/>
+          <then>
+            <property name="messageStatus" scope="default" type="STRING" value="Not Provisioned"/>
+            <!-- dummy endpoint call to step-out from iterate -->
+            <call>
+              <endpoint key="com.wso2telco.dep.hub.smsmessagingapi.dummy.Endpoint"/>
+            </call>
+          </then>
           <else>
-            <sequence key="com.wso2telco.dep.hub.smsmessagingapi.handle.send.sms.address.array.Sequence"/>
-            <enrich>
-              <source clone="true" type="inline">
-                <senderAddress xmlns="">TEST</senderAddress>
-              </source>
-              <target action="child" xpath="//outboundSMSMessageRequest"/>
-            </enrich>
-            <enrich>
-              <source clone="true" property="senderAddress" type="property"/>
-              <target action="child" xpath="//outboundSMSMessageRequest/senderAddress/text()"/>
-            </enrich>
-            <enrich>
-              <source clone="true" type="inline">
-                <senderName xmlns="">TEST</senderName>
-              </source>
-              <target action="child" xpath="//outboundSMSMessageRequest"/>
-            </enrich>
-            <enrich>
-              <source clone="true" property="senderName" type="property"/>
-              <target action="child" xpath="//outboundSMSMessageRequest/senderName/text()"/>
-            </enrich>
-            <enrich>
-              <source clone="true" xpath="//outboundSMSMessageRequest/senderAddresses"/>
-              <target property="original_payload" type="property"/>
-            </enrich>
-            <!-- remove source tag -->
-            <script language="js">
-            	<![CDATA[
-		                	var log = mc.getServiceLog();
-            				var payload = mc.getPayloadXML();
-		                	delete payload..*::senderAddresses;
-
-		                	var addressStr = mc.getProperty('address');
-		                	log.info('_____ADDRESS001___'+addressStr);
-		                	//var addressArr = [];
-							//addressArr.push(addressStr);
-							var address_tag = new XML(<address>{addressStr}</address>);
-							payload.outboundSMSMessageRequest.address = address_tag;
-							log.info('_____PL002___'+payload);
-							mc.setPayloadXML(payload);
-		      	]]>
-		   	</script>
-            <!-- retrieve operator's access token -->
             <sequence key="com.wso2telco.dep.common.select.token.Sequence"/>
-            <property action="remove" name="REST_URL_POSTFIX" scope="axis2"/>
-            <property expression="fn:concat($ctx:API_ENDPOINT, fn:concat('/',fn:concat('outbound',fn:concat('/',fn:concat($ctx:senderAddress,fn:concat('/','requests'))))))" name="API_ENDPOINT" scope="default" type="STRING"/>
             <sequence key="com.wso2telco.dep.common.call.endpoint.Sequence"/>
           </else>
         </filter>
